@@ -6,7 +6,7 @@
 	Description: Enforces SEO restrictions. Requires WordPress SEO by Yoast.
 	Author: Maine Hosting Solutions
 	Author URI: http://mainehost.com/
-	Version: 1.0.0	
+	Version: 1.0.1	
 */
 
 if(!class_exists("seo_enforcer")) {
@@ -76,7 +76,7 @@ if(!class_exists("seo_enforcer")) {
 		 * @param type $stage Whether it's currently activating or deactivating a plugin.
 		 */
 		function dependencies($stage) {
-			if(!in_array(SEOE_WPSEO_PATH, apply_filters('active_plugins', get_option('active_plugins')))) {
+			if((!in_array(SEOE_WPSEO_PATH, apply_filters('active_plugins', get_option('active_plugins')))) && ((!in_array(SEOE_WPSEOP_PATH, apply_filters('active_plugins', get_option('active_plugins')))))) {
 				if($stage == 'activate') $this->dep_error .= sprintf(SEOE_DEP_ERROR, SEOE_WP_SEO_NAME);
 				else $this->dep_error .= sprintf(SEOE_DEP_DEACT_ERROR, SEOE_WP_SEO_NAME);
 			}
