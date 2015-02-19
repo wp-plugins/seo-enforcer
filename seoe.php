@@ -6,7 +6,7 @@
 	Description: Enforces SEO restrictions. Requires WordPress SEO by Yoast.
 	Author: Maine Hosting Solutions
 	Author URI: http://mainehost.com/
-	Version: 1.0.1	
+	Version: 1.0.2
 */
 
 if(!class_exists("seo_enforcer")) {
