@@ -26,6 +26,9 @@ if(!class_exists('seoe_admin')) {
 				<input type="radio" name="seoe_title_trunc_type" value="2"' . (($seoe_title_trunc_type == 2 || !$seoe_title_trunc_type) ? ' checked' : '') . '> Terminate with "...", IE: This Title is too...<br />
 				</p>
 				<p>
+				<strong>Title Truncation Exceptions:</strong> <input type="text" name="seoe_title_trunc_ex" size="50" value="' . get_option('seoe_title_trunc_ex') . '"><br />List of post or page IDs that are an exception to the Title Truncation if enabled. List IDs separated by a comma, IE: 50,99,60. If you want to list your blog index then enter: blog
+				</p>				
+				<p>
 				<strong>Description Checks:</strong> Enforce description lengths to <input type="text" name="seoe_desc_length" size="4" value="' . (($seoe_desc_length) ? $seoe_desc_length : 160) . '"> characters.<br />
 				<input type="radio" name="seoe_desc" value="1"' . ((get_option('seoe_desc')) ? ' checked' : '') . '> Yes <input type="radio" name="seoe_desc" value="0"' . ((!get_option('seoe_desc')) ? ' checked' : '') . '> No
 				</p>
@@ -35,11 +38,14 @@ if(!class_exists('seoe_admin')) {
 				<input type="radio" name="seoe_desc_trunc_type" value="2"' . (($seoe_desc_trunc_type == 2 || !$seoe_desc_trunc_type) ? ' checked' : '') . '> Terminate with "...", IE: This Title is too...<br />
 				</p>
 				<p>
+				<strong>Description Truncation Exceptions:</strong> <input type="text" name="seoe_desc_trunc_ex" size="50" value="' . get_option('seoe_desc_trunc_ex') . '"><br />List of post or page IDs that are an exception to the Description Truncation if enabled. List IDs separated by a comma, IE: 50,99,60. If you want to list your blog index then enter: blog
+				</p>					
+				<p>
 				<strong>H1 Checks:</strong> Enforce no H1 tags in the content since it should be done by the theme. This will replace any H1 tags in content with an H2 tag instead.<br />
 				<input type="radio" name="seoe_h1" value="1"' . ((get_option('seoe_h1')) ? ' checked' : '') . '> Yes <input type="radio" name="seoe_h1" value="0"' . ((!get_option('seoe_h1')) ? ' checked' : '') . '> No
 				</p>
 				<p>
-				<strong>H1 Check Exceptions:</strong> <input type="text" name="seoe_h1_ex" size="50" value="' . get_option('seoe_h1_ex') . '"><br />List of post or page IDs that are an exception to the HQ check if enabled. List IDs separated by a comma, IE: 50,99,60
+				<strong>H1 Check Exceptions:</strong> <input type="text" name="seoe_h1_ex" size="50" value="' . get_option('seoe_h1_ex') . '"><br />List of post or page IDs that are an exception to the HQ check if enabled. List IDs separated by a comma, IE: 50,99,60. If you want to list your blog index then enter: blog
 				</p>
 				<p>
 				<input type="submit" value="Save" class="button button-primary">
