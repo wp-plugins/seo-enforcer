@@ -6,7 +6,7 @@
 	Description: Enforces SEO restrictions. Requires WordPress SEO by Yoast.
 	Author: Maine Hosting Solutions
 	Author URI: http://mainehost.com/
-	Version: 1.0.2
+	Version: 1.1.0	
 */
 
 if(!class_exists("seo_enforcer")) {
@@ -113,11 +113,30 @@ if(!class_exists("seo_enforcer")) {
 	     * @return string Returns the adjusted title.
 	     */
 		function title_check($title) {
+			global $post;
+
 			if(get_option('seoe_title')) {
+				$ex = get_option('seoe_title_trunc_ex');
 				$length = get_option('seoe_title_length');
+
 				if(!$length) $length = 70;
 
-				if(strlen($title) > $length) {
+				if($ex) {
+					$ex = array_map('trim', explode(',', $ex));					
+
+					if(is_home()) {
+						if(!in_array('blog', $ex)) $proceed = 1;
+						else $procedd = 0;
+					}
+					else {
+						if(!in_array($post->ID, $ex)) $proceed = 1;
+						else $proceed = 0;
+					}
+				}
+				else {
+					$proceed = 1;
+				}
+				if($proceed && strlen($title) > $length) {
 					$type = get_option('seoe_title_trunc_type');
 
 					if($type == 1) {
@@ -144,11 +163,30 @@ if(!class_exists("seo_enforcer")) {
 	     * @return string The meta description tag on success.
 	     */
 		function desc_check($desc) {
+			global $post;			
+
 			if(get_option('seoe_desc')) {
+				$ex = get_option('seoe_desc_trunc_ex');
 				$length = get_option('seoe_desc_length');
+
 				if(!$length) $length = 160;
 
-				if(strlen($desc) > $length) {
+				if($ex) {
+					$ex = array_map('trim', explode(',', $ex));					
+
+					if(is_home()) {
+						if(!in_array('blog', $ex)) $proceed = 1;
+						else $procedd = 0;
+					}
+					else {
+						if(!in_array($post->ID, $ex)) $proceed = 1;
+						else $proceed = 0;
+					}
+				}
+				else {
+					$proceed = 1;
+				}
+				if($proceed && strlen($desc) > $length) {
 					$type = get_option('seoe_desc_trunc_type');
 
 					if($type == 1) {
@@ -176,14 +214,25 @@ if(!class_exists("seo_enforcer")) {
 		 * @return mixed
 		 */
 		function content_check($content) {
+			global $post;
+
 			if($ex = get_option('seoe_h1_ex')) {
-				global $post;
 				$ex = array_map('trim', explode(',', $ex));
 
-				if(!in_array($post->ID, $ex)) $content = $this->content_clean($content);
+				if(is_home()) {
+					if(!in_array('blog', $ex)) $proceed = 1;
+					else $procedd = 0;
+				}
+				else {
+					if(!in_array($post->ID, $ex)) $proceed = 1;
+					else $proceed = 0;
+				}
 			}
 			else {
-				$content = $this->content_clean($content);
+				$proceed = 1;
+			}
+			if($proceed) {
+				$content = $this->content_clean($content);				
 			}
 
 			return $content;

@@ -3,7 +3,7 @@ Contributors: mainehost, godthor
 Tags: SEO, WordPress SEO
 Requires at least: 3.9
 Tested up to: 4.1.1
-Stable tag: 1.0.2
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -37,11 +37,23 @@ None yet.
 
 == Changelog ==
 
+= 1.1.0 =
+* **New**
+
+	* Truncation exceptions for titles and descriptions.
+	* Any exception list now accepts *blog* if you want your blog index to be an exception to a rule.
+
+* **Known Issues**
+
+	* Upgrading WordPress SEO will deactivate SEO Enforcer so you have to activate it after the upgrade. I'm hoping to fix this very soon. 
+
 = 1.0.2 =
 * Verified compatability with WordPress 4.1.1
 
 = 1.0.1 =
-* Fixed an issue where the plugin would not activate if WordPress SEO Premium was installed instead of the free version. It should now activate for either version of WordPress SEO.
+* **Bug Fixes**
+
+	* Fixed an issue where the plugin would not activate if WordPress SEO Premium was installed instead of the free version. It should now activate for either version of WordPress SEO.
 
 = 1.0.0 =
 * Initial release of the plugin.
