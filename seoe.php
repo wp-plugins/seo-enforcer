@@ -6,7 +6,7 @@
 	Description: Enforces SEO restrictions. Requires WordPress SEO by Yoast.
 	Author: Maine Hosting Solutions
 	Author URI: http://mainehost.com/
-	Version: 1.1.0	
+	Version: 1.1.1	
 */
 
 if(!class_exists("seo_enforcer")) {
@@ -23,17 +23,23 @@ if(!class_exists("seo_enforcer")) {
 	     * Setup hooks, actions, filters, and whatever is needed for the plugin to run.
 	     */
 		function __construct() {
-			require 'constants.php';
+			// require 'constants.php';
 
 			register_activation_hook( __FILE__, array($this,'activate'));
 
-			add_action('plugins_loaded', array($this,'maybe_deactivate'));
-
-			if(get_option('seoe_title')) add_filter('wpseo_title', array($this,'title_check'), 99);
-			if(get_option('seoe_desc')) add_filter('wpseo_metadesc', array($this,'desc_check'), 99);
-			if(get_option('seoe_h1')) add_filter('the_content', array($this,'content_check'), 99);
-
+			// add_action('plugins_loaded', array($this,'maybe_deactivate'));
+			add_action('plugins_loaded', array($this,'notice_check'));
 			add_action('admin_menu', array($this,'menu'));
+
+			DEFINE('SEOE_NAME','SEO Enforcer');
+			DEFINE('SEOE_MENU_NAME','SEO Enforcer');
+			DEFINE('SEOE_WP_SEO_NAME','WordPress SEO by Yoast');
+			DEFINE('SEOE_WPSEO_PATH','wordpress-seo/wp-seo.php');
+			DEFINE('SEOE_WPSEOP_PATH','wordpress-seo-premium/wp-seo-premium.php');
+
+			// DEFINE('SEOE_DEP_ERROR','<p>%s must be installed and active.</p>');
+			DEFINE('SEOE_DEP_ERROR','<div class="error"><p>%s is not installed or active. ' . SEOE_NAME . ' will not function until %s is installed and activated.</p></div>');
+			// DEFINE('SEOE_DEP_DEACT_ERROR','<div class="error"><p>%s is not installed or active. ' . SEOE_NAME . ' will not function until %s is installed and activated.</p></div>');			
 		}
 		/**
 		 * Creates the menu in WP admin for the plugin.
@@ -48,6 +54,31 @@ if(!class_exists("seo_enforcer")) {
 		 */
 		function admin() {
 			require 'seoe_admin.php';
+		}	
+		/**
+		 * Run when this plugin is activated.
+		 */
+		function activate() {
+			$this->check_dependencies();
+		}			
+		/**
+		 * Used to check if dependencies are active when a plugin is deactivated.
+		 */
+		// function maybe_deactivate() {
+		function notice_check() {		
+			// $this->dependencies('deactivate');
+			$this->dependencies();
+
+			if($this->dep_error) {
+	            // require_once(ABSPATH . 'wp-admin/includes/plugin.php');
+	            // deactivate_plugins(plugin_basename( __FILE__ ));
+	            add_action('admin_notices', array($this,'deactivate_notice'));
+	        }
+	        else {
+				if(get_option('seoe_title')) add_filter('wpseo_title', array($this,'title_check'), 99);
+				if(get_option('seoe_desc')) add_filter('wpseo_metadesc', array($this,'desc_check'), 99);
+				if(get_option('seoe_h1')) add_filter('the_content', array($this,'content_check'), 99);
+	        }
 		}		
 	    /**
 	     * Gives an error if trying to activate the plugin without dependencies.
@@ -75,37 +106,22 @@ if(!class_exists("seo_enforcer")) {
 		 * Checks to see that the dependencies are installed and active.
 		 * @param type $stage Whether it's currently activating or deactivating a plugin.
 		 */
-		function dependencies($stage) {
+		// function dependencies($stage) {
+		function dependencies() {		
 			if((!in_array(SEOE_WPSEO_PATH, apply_filters('active_plugins', get_option('active_plugins')))) && ((!in_array(SEOE_WPSEOP_PATH, apply_filters('active_plugins', get_option('active_plugins')))))) {
-				if($stage == 'activate') $this->dep_error .= sprintf(SEOE_DEP_ERROR, SEOE_WP_SEO_NAME);
-				else $this->dep_error .= sprintf(SEOE_DEP_DEACT_ERROR, SEOE_WP_SEO_NAME);
+				// if($stage == 'activate') $this->dep_error .= sprintf(SEOE_DEP_ERROR, SEOE_WP_SEO_NAME);
+				// else $this->dep_error .= sprintf(SEOE_DEP_DEACT_ERROR, SEOE_WP_SEO_NAME, SEOE_WP_SEO_NAME);
+				$this->dep_error .= sprintf(SEOE_DEP_ERROR, SEOE_WP_SEO_NAME, SEOE_WP_SEO_NAME);				
 			}
 		}
 		/**
 		 * Core function to check for dependencies.
 		 */
 		function check_dependencies() {
-			$this->dependencies('activate');
+			// $this->dependencies('activate');
+			$this->dependencies();
 
 			if($this->dep_error) $this->br_trigger_error($this->dep_error, E_USER_ERROR);
-		}
-		/**
-		 * Run when this plugin is activated.
-		 */
-		function activate() {
-			$this->check_dependencies();
-		}
-		/**
-		 * Used to check if dependencies are active when a plugin is deactivated.
-		 */
-		function maybe_deactivate() {
-			$this->dependencies('deactivate');
-
-			if($this->dep_error) {
-	            require_once(ABSPATH . 'wp-admin/includes/plugin.php');
-	            deactivate_plugins(plugin_basename( __FILE__ ));
-	            add_action('admin_notices', array($this,'deactivate_notice'));
-	        }
 		}
 	    /**
 	     * Filter function for wpseo_title. Ensures titles are no longer than 70 characters.
@@ -144,6 +160,7 @@ if(!class_exists("seo_enforcer")) {
 					}
 					else {
 						$new_length = $length - 3;
+						if($new_length < 0) $new_length = 0;
 						$new_title = substr($title, 0, $new_length) . '...';
 					} 
 
@@ -194,6 +211,7 @@ if(!class_exists("seo_enforcer")) {
 					}
 					else {
 						$new_length = $length - 3;
+						if($new_length < 0) $new_length = 0;
 						$new_desc = substr($desc, 0, $new_length) . '...';						
 					}
 
