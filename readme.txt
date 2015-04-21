@@ -2,8 +2,8 @@
 Contributors: mainehost, godthor
 Tags: SEO, WordPress SEO
 Requires at least: 3.9
-Tested up to: 4.1.1
-Stable tag: 1.1.1
+Tested up to: 4.1.2
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -37,21 +37,39 @@ None yet.
 
 == Changelog ==
 
+= 1.2.0 =
+
+* **New**
+
+	* Added an option in settings to display SEO notices on admin screens where WordPress SEO or [Shopp SEO](https://wordpress.org/plugins/shopp-seo/) are used. This will give a reminder to manually enter in the SEO fields and will also give errors when content is saved and exceeds the recommended length.
+
+* **Updated**
+
+	* Changed the default title length to 59 characters and description length to 156 to match with WordPress SEO's recommendations.
+
+* **Removed**
+
+	* Cleaned out deprecated code.
+
 = 1.1.1 =
 
-* **Tweak**
+* **Updated**
+
 	* The deactivation of SEO Enforcer if WordPress SEO is deactivated has been removed and instead replaced with an admin notice. The problem was that when WordPress SEO was being upgraded it would in turn deactivate SEO Enforcer. If you did not realize this then you may have had SEO Enforcer deactivated for a while, maybe even now.
 
 * **Bug Fix**
+
 	* Title and description lengths could be negative in certain situations and in turn create oddities. I now check for negative values to prevent those oddities.
 
 = 1.1.0 =
 
 * **New**
+
 	* Truncation exceptions for titles and descriptions.
 	* Any exception list now accepts *blog* if you want your blog index to be an exception to a rule.
 
 * **Known Issues**
+
 	* Upgrading WordPress SEO will deactivate SEO Enforcer so you have to activate it after the upgrade. I'm hoping to fix this very soon. 
 
 = 1.0.2 =
@@ -61,6 +79,7 @@ None yet.
 = 1.0.1 =
 
 * **Bug Fixes**
+
 	* Fixed an issue where the plugin would not activate if WordPress SEO Premium was installed instead of the free version. It should now activate for either version of WordPress SEO.
 
 = 1.0.0 =
