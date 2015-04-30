@@ -2,8 +2,8 @@
 Contributors: mainehost, godthor
 Tags: SEO, WordPress SEO
 Requires at least: 3.9
-Tested up to: 4.2
-Stable tag: 1.2.0
+Tested up to: 4.2.1
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -37,7 +37,17 @@ None yet.
 
 == Changelog ==
 
+= 1.2.1 =
+
+Released: April 30th, 2015
+
+* **Bug Fix**
+
+	* The title and description length checks will now properly truncate after whole words instead of in the middle of a word.
+
 = 1.2.0 =
+
+Released: April 21st, 2015
 
 * **New**
 
@@ -53,6 +63,8 @@ None yet.
 
 = 1.1.1 =
 
+Released: March 31st, 2015
+
 * **Updated**
 
 	* The deactivation of SEO Enforcer if WordPress SEO is deactivated has been removed and instead replaced with an admin notice. The problem was that when WordPress SEO was being upgraded it would in turn deactivate SEO Enforcer. If you did not realize this then you may have had SEO Enforcer deactivated for a while, maybe even now.
@@ -62,6 +74,8 @@ None yet.
 	* Title and description lengths could be negative in certain situations and in turn create oddities. I now check for negative values to prevent those oddities.
 
 = 1.1.0 =
+
+Released: March 26th, 2015
 
 * **New**
 
@@ -74,14 +88,20 @@ None yet.
 
 = 1.0.2 =
 
+Released: February 19th, 2015
+
 * Verified compatability with WordPress 4.1.1
 
 = 1.0.1 =
+
+Released: February 10th, 2015
 
 * **Bug Fixes**
 
 	* Fixed an issue where the plugin would not activate if WordPress SEO Premium was installed instead of the free version. It should now activate for either version of WordPress SEO.
 
 = 1.0.0 =
+
+Released: February 5th, 2015
 
 * Initial release of the plugin.
