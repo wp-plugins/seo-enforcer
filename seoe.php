@@ -6,7 +6,7 @@
 	Description: Enforces SEO restrictions. Requires WordPress SEO by Yoast.
 	Author: Maine Hosting Solutions
 	Author URI: http://mainehost.com/
-	Version: 1.2.0	
+	Version: 1.2.1	
 */
 
 if(!class_exists("seo_enforcer")) {
@@ -149,15 +149,21 @@ if(!class_exists("seo_enforcer")) {
 			if(get_option('seoe_title')) {
 				$ex = get_option('seoe_title_trunc_ex');
 				$length = get_option('seoe_title_length');
+				$type = get_option('seoe_title_trunc_type');
 
 				if(!$length) $length = SEOE_TITLE_LENGTH;
 
+				if($type == 2) {
+					$length = $length - 3;
+
+					if($length < 0) $length = SEOE_TITLE_LENGTH; # If it would be 0 characters or less then give it the default length
+				} 	
 				if($ex) {
 					$ex = array_map('trim', explode(',', $ex));					
 
 					if(is_home()) {
 						if(!in_array('blog', $ex)) $proceed = 1;
-						else $procedd = 0;
+						else $proceed = 0;
 					}
 					else {
 						if(!in_array($post->ID, $ex)) $proceed = 1;
@@ -165,19 +171,23 @@ if(!class_exists("seo_enforcer")) {
 					}
 				}
 				else {
-					$proceed = 1;
+					$proceed = 1; # No exceptions
 				}
 				if($proceed && strlen($title) > $length) {
-					$type = get_option('seoe_title_trunc_type');
+					$raw_title = explode(' ', $title);
 
-					if($type == 1) {
-						$new_title = substr($title, 0, $length);						
+					foreach($raw_title as $key=>$value) {
+						$test_title = $test_title . $value . ' ';
+
+						if(strlen($test_title) <= $length) {
+							$new_title .= $value . ' ';
+						}
+						else {
+							$new_title = rtrim($new_title,' ');
+							if($type == 2) $new_title .= '...';
+							break;
+						}
 					}
-					else {
-						$new_length = $length - 3;
-						if($new_length < 0) $new_length = 0;
-						$new_title = substr($title, 0, $new_length) . '...';
-					} 
 
 					if($new_title) return $new_title;
 					else return $title;
@@ -200,15 +210,22 @@ if(!class_exists("seo_enforcer")) {
 			if(get_option('seoe_desc')) {
 				$ex = get_option('seoe_desc_trunc_ex');
 				$length = get_option('seoe_desc_length');
+				$type = get_option('seoe_title_trunc_type');
 
 				if(!$length) $length = SEOE_DESC_LENGTH;
+
+				if($type == 2) {
+					$length = $length - 3;
+
+					if($length < 0) $length = SEOE_DESC_LENGTH; # If it would be 0 characters or less then give it the default length
+				} 
 
 				if($ex) {
 					$ex = array_map('trim', explode(',', $ex));					
 
 					if(is_home()) {
 						if(!in_array('blog', $ex)) $proceed = 1;
-						else $procedd = 0;
+						else $proceed = 0;
 					}
 					else {
 						if(!in_array($post->ID, $ex)) $proceed = 1;
@@ -219,15 +236,19 @@ if(!class_exists("seo_enforcer")) {
 					$proceed = 1;
 				}
 				if($proceed && strlen($desc) > $length) {
-					$type = get_option('seoe_desc_trunc_type');
+					$raw_desc = explode(' ', $desc);
 
-					if($type == 1) {
-						$new_desc = substr($desc, 0, $length);
-					}
-					else {
-						$new_length = $length - 3;
-						if($new_length < 0) $new_length = 0;
-						$new_desc = substr($desc, 0, $new_length) . '...';						
+					foreach($raw_desc as $key=>$value) {
+						$test_desc = $test_desc . $value . ' ';
+
+						if(strlen($test_desc) <= $length) {
+							$new_desc .= $value . ' ';
+						}
+						else {
+							$new_desc = rtrim($new_desc,' ');
+							if($type == 2) $new_desc .= '...';
+							break;
+						}
 					}
 
 					if($new_desc) return $new_desc;
