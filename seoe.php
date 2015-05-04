@@ -6,7 +6,7 @@
 	Description: Enforces SEO restrictions. Requires WordPress SEO by Yoast.
 	Author: Maine Hosting Solutions
 	Author URI: http://mainehost.com/
-	Version: 1.2.1	
+	Version: 1.2.2
 */
 
 if(!class_exists("seo_enforcer")) {
@@ -15,9 +15,14 @@ if(!class_exists("seo_enforcer")) {
 	 */
 	class seo_enforcer {
 		/**
-		 * @var string Lets the plugin know what folder this lives in.
+		 * @var string - Lets the plugin know what folder this lives in.
 		 */
 		protected $plugin_folder = '';
+
+		/**
+		 * @var bool - Flags if there's a dependency error.
+		 */
+		protected $dep_error = false;
 
 	    /**
 	     * Setup hooks, actions, filters, and whatever is needed for the plugin to run.
@@ -29,6 +34,7 @@ if(!class_exists("seo_enforcer")) {
 			add_action('admin_menu', array($this,'menu'));
 			add_action('current_screen', array($this,'check_screen'));
 
+			add_filter('plugin_action_links_' . plugin_basename(__FILE__), array($this,'add_action_link'));
 
 			define('SEOE_NAME','SEO Enforcer');
 			define('SEOE_MENU_NAME','SEO Enforcer');
@@ -40,6 +46,21 @@ if(!class_exists("seo_enforcer")) {
 
 			define('SEOE_DEP_ERROR','<div class="error"><p>%s is not installed or active. ' . SEOE_NAME . ' will not function until %s is installed and activated.</p></div>');
 		}
+		/**
+		 * Adds the extra links on the plugins page.
+		 * @param array $links - The exsting default links.
+		 * @return array - Merge in my link array to the existing and return that.
+		 */
+		function add_action_link($links) {
+			$path = admin_url();
+
+			$mylinks = array(
+				'<a href="https://wordpress.org/support/view/plugin-reviews/seo-enforcer" target="_blank">Rate and Review</a>',
+				'<a href="' . $path . 'options-general.php?page=seo-enforcer">Settings</a>'
+			);
+
+			return array_merge($mylinks, $links);
+		}		
 		/**
 		 * Creates the menu in WP admin for the plugin.
 		 */
