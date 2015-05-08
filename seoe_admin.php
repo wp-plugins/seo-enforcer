@@ -33,7 +33,8 @@ if(!class_exists('seoe_admin')) {
 				<div>
 					<div style="' . $left_style . '">
 						<p>
-						<input type="checkbox" name="seoe_post_notices" value="1"' . ((get_option('seoe_post_notices')) ? ' checked' : '') . '> Enable SEO notices on the admin screens where WordPress SEO or Shopp SEO are used.
+						Enable SEO notices on the admin screens where WordPress SEO or Shopp SEO are used.<br />
+						<input type="radio" name="seoe_post_notices" value="1"' . ((get_option('seoe_post_notices')) ? ' checked' : '') . '> Yes <input type="radio" name="seoe_post_notices" value="0"' . ((!get_option('seoe_post_notices')) ? ' checked' : '') . '> No
 						</p>
 						<h2>Frontend</h2>
 						<p>

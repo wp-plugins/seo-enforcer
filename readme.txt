@@ -3,7 +3,7 @@ Contributors: mainehost, godthor
 Tags: SEO, WordPress SEO
 Requires at least: 3.9
 Tested up to: 4.2.2
-Stable tag: 1.2.2
+Stable tag: 1.2.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -37,21 +37,38 @@ None yet.
 
 == Changelog ==
 
+= 1.2.3 =
+
+Released: May 8th, 2015
+
+* **Updates**
+
+	* If using SEO notices then the length checks will now properly use the lengths you've defined in settings. It will also respect any exceptions you've given.
+	* The SEO notices will now show the recommended lengths and how many characters in excess when it's too long.
+
+* **Bug Fixes**
+	
+	* Fixed an issue where lengths would be shorter than defined if using the ... truncation method.
+	* You can now turn off the SEO notices in settings. It was getting stuck on and wouldn't allow you to disable it.
+	* The SEO notice check will not give an error if length is at the recommended length, only when longer than it.
+
 = 1.2.2 =
 
 Released: May 4th, 2015
 
-* **Added**
+* **New Features**
+
 	* Link for rate & review, as well as SEO Enforcer settings, appears on the plugins page.
 
-* **Bug Fix**
+* **Bug Fixes**
+
 	* Cleaned up some PHP notices about undefined variables.
 
 = 1.2.1 =
 
 Released: April 30th, 2015
 
-* **Bug Fix**
+* **Bug Fixes**
 
 	* The title and description length checks will now properly truncate after whole words instead of in the middle of a word.
 
@@ -63,7 +80,7 @@ Released: April 21st, 2015
 
 	* Added an option in settings to display SEO notices on admin screens where WordPress SEO or [Shopp SEO](https://wordpress.org/plugins/shopp-seo/) are used. This will give a reminder to manually enter in the SEO fields and will also give errors when content is saved and exceeds the recommended length.
 
-* **Updated**
+* **Updates**
 
 	* Changed the default title length to 59 characters and description length to 156 to match with WordPress SEO's recommendations.
 
@@ -75,11 +92,11 @@ Released: April 21st, 2015
 
 Released: March 31st, 2015
 
-* **Updated**
+* **Updates**
 
 	* The deactivation of SEO Enforcer if WordPress SEO is deactivated has been removed and instead replaced with an admin notice. The problem was that when WordPress SEO was being upgraded it would in turn deactivate SEO Enforcer. If you did not realize this then you may have had SEO Enforcer deactivated for a while, maybe even now.
 
-* **Bug Fix**
+* **Bug Fixes**
 
 	* Title and description lengths could be negative in certain situations and in turn create oddities. I now check for negative values to prevent those oddities.
 
