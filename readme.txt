@@ -132,3 +132,9 @@ Released: February 10th, 2015
 Released: February 5th, 2015
 
 * Initial release of the plugin.
+
+== Upgrade Notice ==
+
+= 1.2.3 =
+
+Bug fixes and improvements.
