@@ -6,7 +6,7 @@
 	Description: Enforces SEO restrictions. Requires WordPress SEO by Yoast.
 	Author: Maine Hosting Solutions
 	Author URI: http://mainehost.com/
-	Version: 1.2.1	
+	Version: 1.2.3
 */
 
 if(!class_exists("seo_enforcer")) {
@@ -15,9 +15,14 @@ if(!class_exists("seo_enforcer")) {
 	 */
 	class seo_enforcer {
 		/**
-		 * @var string Lets the plugin know what folder this lives in.
+		 * @var string - Lets the plugin know what folder this lives in.
 		 */
 		protected $plugin_folder = '';
+
+		/**
+		 * @var bool - Flags if there's a dependency error.
+		 */
+		protected $dep_error = false;
 
 	    /**
 	     * Setup hooks, actions, filters, and whatever is needed for the plugin to run.
@@ -28,8 +33,11 @@ if(!class_exists("seo_enforcer")) {
 			add_action('plugins_loaded', array($this,'notice_check'));
 			add_action('admin_menu', array($this,'menu'));
 			add_action('current_screen', array($this,'check_screen'));
+			add_action('plugins_loaded', array($this,'upgrade_check'));
 
+			add_filter('plugin_action_links_' . plugin_basename(__FILE__), array($this,'add_action_link'));
 
+			define('SEOE_SETTINGS_VER', 1);
 			define('SEOE_NAME','SEO Enforcer');
 			define('SEOE_MENU_NAME','SEO Enforcer');
 			define('SEOE_WP_SEO_NAME','WordPress SEO by Yoast');
@@ -40,6 +48,31 @@ if(!class_exists("seo_enforcer")) {
 
 			define('SEOE_DEP_ERROR','<div class="error"><p>%s is not installed or active. ' . SEOE_NAME . ' will not function until %s is installed and activated.</p></div>');
 		}
+		/**
+		 * Adds the extra links on the plugins page.
+		 * @param array $links - The exsting default links.
+		 * @return array - Merge in my link array to the existing and return that.
+		 */
+		function add_action_link($links) {
+			$path = admin_url();
+
+			$mylinks = array(
+				'<a href="https://wordpress.org/support/view/plugin-reviews/seo-enforcer" target="_blank">Rate and Review</a>',
+				'<a href="' . $path . 'options-general.php?page=seo-enforcer">Settings</a>'
+			);
+
+			return array_merge($mylinks, $links);
+		}	
+		function upgrade_check() {
+			$version = get_option('seoe_settings_version');
+
+			if(!$version) {
+				update_option('seoe_settings_version', SEOE_SETTINGS_VER);
+			}
+			elseif($version && $version != SEOE_SETTINGS_VER) {
+				update_option('seoe_settings_version', SEOE_SETTINGS_VER);
+			}
+		}	
 		/**
 		 * Creates the menu in WP admin for the plugin.
 		 */
@@ -57,8 +90,42 @@ if(!class_exists("seo_enforcer")) {
 			$screen = get_current_screen();
 
 			if(is_admin() && in_array($screen->base, $notice_types) && get_option('seoe_post_notices')) {
+				$title_check = get_option('seoe_title');
+				$desc_check = get_option('seoe_desc');
+
+				if($title_check) {
+					$title_trunc_type = get_option('seoe_title_trunc_type');
+					$title_length = get_option('seoe_title_length');
+					$title_exceptions = get_option('seoe_title_trunc_ex');
+				
+					if($title_exceptions) {
+						$ex = array_map('trim', explode(',', $title_exceptions));
+						$post_id = $_GET['post'];
+
+						if($screen->base == 'post' && in_array($post_id, $ex)) $title_length = 9999;
+					}
+				}
+				else {
+					$title_length = SEOE_TITLE_LENGTH;
+				}
+				if($desc_check) {
+					$desc_trunc_type = get_option('seoe_desc_trunc_type');
+					$desc_length = get_option('seoe_desc_length');
+					$desc_exceptions = get_option('seoe_desc_trunc_ex');
+
+					if($desc_exceptions) {
+						$ex = array_map('trim', explode(',', $desc_exceptions));
+						$post_id = $_GET['post'];
+
+						if($screen->base == 'post' && in_array($post_id, $ex)) $desc_length = 9999;
+					}					
+				}
+				else {
+					$desc_length = SEOE_DESC_LENGTH;
+				}
+
 				wp_enqueue_script('mhs_seoe_admin', plugin_dir_url( __FILE__ ) . 'admin.js', array( 'jquery'), false, true);
-				wp_localize_script('mhs_seoe_admin', 'seoe_ajax', array('ajaxurl' => admin_url('admin-ajax.php')));
+				wp_localize_script('mhs_seoe_admin', 'seoe_ajax', array('ajaxurl' => admin_url('admin-ajax.php'),'title_length'=>$title_length,'desc_length'=>$desc_length));
 
 				add_action('admin_notices', array($this,'post_notice'));
 			}
@@ -69,8 +136,8 @@ if(!class_exists("seo_enforcer")) {
 		function post_notice() {
        		echo '<div class="update-nag" style="display: none;" id="seoe_title_error">The SEO Title field should be manually filled in.</div>';
        		echo '<div class="update-nag" style="display: none;" id="seoe_desc_error">The Meta Description field should be manually filled in.</div>'; 
-       		echo '<div class="error" style="display: none;" id="seoe_title_length"><p>The SEO Title field is longer than the recommended length.</p></div>';
-       		echo '<div class="error" style="display: none;" id="seoe_desc_length"><p>The Meta Description is longer than the recommended length.</p></div>'; 	       		
+       		echo '<div class="error" style="display: none;" id="seoe_title_length"><p>The SEO Title field is longer than the recommended length of <span id="title_length_set_notice"></span> by <span id="title_length_char_notice"></span> characters</p></div>';
+       		echo '<div class="error" style="display: none;" id="seoe_desc_length"><p>The Meta Description is longer than the recommended length of  <span id="desc_length_set_notice"></span> by <span id="desc_length_char_notice"></span> characters</p></div>'; 	       		
        	}
 		/**
 		 * Admin area for this plugin.
@@ -154,7 +221,7 @@ if(!class_exists("seo_enforcer")) {
 				if(!$length) $length = SEOE_TITLE_LENGTH;
 
 				if($type == 2) {
-					$length = $length - 3;
+					$length -= 3;
 
 					if($length < 0) $length = SEOE_TITLE_LENGTH; # If it would be 0 characters or less then give it the default length
 				} 	
@@ -215,7 +282,7 @@ if(!class_exists("seo_enforcer")) {
 				if(!$length) $length = SEOE_DESC_LENGTH;
 
 				if($type == 2) {
-					$length = $length - 3;
+					$length -= 3;
 
 					if($length < 0) $length = SEOE_DESC_LENGTH; # If it would be 0 characters or less then give it the default length
 				} 
