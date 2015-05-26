@@ -3,7 +3,7 @@ Contributors: mainehost, godthor
 Tags: SEO, WordPress SEO
 Requires at least: 3.9
 Tested up to: 4.2.2
-Stable tag: 1.2.3
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -36,6 +36,23 @@ None yet.
 1. Admin area.
 
 == Changelog ==
+
+= 1.3.0 =
+
+Released: May 26th, 2015
+
+* **New Features**
+	
+	* Image alt and title attribute checks. More info on the settings page.
+
+* **Updates**
+
+	* Reorganized the settings page.
+
+* **Bug Fixes**
+
+	* Fixed a bunch of logic regarding length checks so it should be much better about what it returns.
+	* Title length will now show the saved value instead of always showing the default length.
 
 = 1.2.3 =
 
@@ -134,6 +151,10 @@ Released: February 5th, 2015
 * Initial release of the plugin.
 
 == Upgrade Notice ==
+
+= 1.3.0 =
+
+New feature to check image alt and title attributes.
 
 = 1.2.3 =
 
