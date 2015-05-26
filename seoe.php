@@ -6,7 +6,7 @@
 	Description: Enforces SEO restrictions. Requires WordPress SEO by Yoast.
 	Author: Maine Hosting Solutions
 	Author URI: http://mainehost.com/
-	Version: 1.2.3
+	Version: 1.3.1
 */
 
 if(!class_exists("seo_enforcer")) {
@@ -37,7 +37,7 @@ if(!class_exists("seo_enforcer")) {
 
 			add_filter('plugin_action_links_' . plugin_basename(__FILE__), array($this,'add_action_link'));
 
-			define('SEOE_SETTINGS_VER', 1);
+			define('SEOE_SETTINGS_VER', 2);
 			define('SEOE_NAME','SEO Enforcer');
 			define('SEOE_MENU_NAME','SEO Enforcer');
 			define('SEOE_WP_SEO_NAME','WordPress SEO by Yoast');
@@ -70,6 +70,32 @@ if(!class_exists("seo_enforcer")) {
 				update_option('seoe_settings_version', SEOE_SETTINGS_VER);
 			}
 			elseif($version && $version != SEOE_SETTINGS_VER) {
+				if($version == 1 && SEOE_SETTINGS_VER == 2) { # Prior to serialized settings
+					$settings = array();
+					$settings['seoe_post_notices'] = get_option('seoe_post_notices');
+					$settings['seoe_title'] = get_option('seoe_title');
+					$settings['seoe_title_length'] = get_option('seoe_title_length');
+					$settings['seoe_title_trunc_type'] = get_option('seoe_title_trunc_type');
+					$settings['seoe_title_trunc_ex'] = get_option('seoe_title_trunc_ex');
+					$settings['seoe_desc'] = get_option('seoe_desc');
+					$settings['seoe_desc_trunc_type'] = get_option('seoe_desc_trunc_type');
+					$settings['seoe_desc_trunc_ex'] = get_option('seoe_desc_trunc_ex');
+					$settings['seoe_h1'] = get_option('seoe_h1');
+					$settings['seoe_h1_ex'] = get_option('seoe_h1_ex');
+
+					update_option('seoe_settings', serialize($settings));
+
+					// delete_option('seoe_post_notices');
+					// delete_option('seoe_title');					
+					// delete_option('seoe_title_length');					
+					// delete_option('seoe_title_trunc_type');					
+					// delete_option('seoe_title_trunc_ex');					
+					// delete_option('seoe_desc_trunc_type');					
+					// delete_option('seoe_desc_trunc_ex');					
+					// delete_option('seoe_h1');	
+					// delete_option('seoe_h1_ex');
+				}
+
 				update_option('seoe_settings_version', SEOE_SETTINGS_VER);
 			}
 		}	
@@ -86,17 +112,20 @@ if(!class_exists("seo_enforcer")) {
 		 * Determines if this is a post screen to enable the SEO checks.
 		 */
 		function check_screen() {
+			$settings = get_option('seoe_settings');
+
+			if($settings) $settings = unserialize($settings);
+
 			$notice_types = array('post','edit-tags','toplevel_page_shopp-products','catalog_page_shopp-categories');
 			$screen = get_current_screen();
 
-			if(is_admin() && in_array($screen->base, $notice_types) && get_option('seoe_post_notices')) {
-				$title_check = get_option('seoe_title');
-				$desc_check = get_option('seoe_desc');
+			if(is_admin() && in_array($screen->base, $notice_types) && $settings['seoe_post_notices']) {
+				$title_check = $settings['seoe_title'];
+				$desc_check = $settings['seoe_desc'];
 
 				if($title_check) {
-					$title_trunc_type = get_option('seoe_title_trunc_type');
-					$title_length = get_option('seoe_title_length');
-					$title_exceptions = get_option('seoe_title_trunc_ex');
+					$title_length = $settings['seoe_title_length'];
+					$title_exceptions = $settings['seoe_title_trunc_ex'];
 				
 					if($title_exceptions) {
 						$ex = array_map('trim', explode(',', $title_exceptions));
@@ -109,9 +138,8 @@ if(!class_exists("seo_enforcer")) {
 					$title_length = SEOE_TITLE_LENGTH;
 				}
 				if($desc_check) {
-					$desc_trunc_type = get_option('seoe_desc_trunc_type');
-					$desc_length = get_option('seoe_desc_length');
-					$desc_exceptions = get_option('seoe_desc_trunc_ex');
+					$desc_length = $settings['seoe_desc_length'];
+					$desc_exceptions = $settings['seoe_desc_trunc_ex'];
 
 					if($desc_exceptions) {
 						$ex = array_map('trim', explode(',', $desc_exceptions));
@@ -161,9 +189,12 @@ if(!class_exists("seo_enforcer")) {
 	            add_action('admin_notices', array($this,'deactivate_notice'));
 	        }
 	        else {
-				if(get_option('seoe_title')) add_filter('wpseo_title', array($this,'title_check'), 99);
-				if(get_option('seoe_desc')) add_filter('wpseo_metadesc', array($this,'desc_check'), 99);
-				if(get_option('seoe_h1')) add_filter('the_content', array($this,'content_check'), 99);
+	        	$settings = get_option('seoe_settings');
+
+	        	if($settings) $settings = unserialize($settings);
+				if($settings['seoe_title']) add_filter('wpseo_title', array($this,'title_check'), 99);
+				if($settings['seoe_desc']) add_filter('wpseo_metadesc', array($this,'desc_check'), 99);
+				if($settings['seoe_h1'] || $settings['seoe_img']) add_filter('the_content', array($this,'content_check'), 9999);
 	        }
 		}		
 	    /**
@@ -210,21 +241,44 @@ if(!class_exists("seo_enforcer")) {
 	     * @param string $title The title passed in from wpseo_title.
 	     * @return string Returns the adjusted title.
 	     */
+	    function run_meta($meta, $length, $type) {
+			$raw = explode(' ', $meta);
+			end($raw);
+			$last_key = key($raw);
+			reset($raw);
+
+			foreach($raw as $key=>$value) {
+				$value = trim($value);
+
+				if(!$test_meta) $test_meta = $value;
+				else $test_meta .= ' ' . $value . ($key < $last_key && $type == 2) ? '...' : '';
+
+				if(strlen($test_meta) <= $length) {
+					$new_meta = (!$new_meta) ? $value : $new_meta . ' ' . $value;
+				}
+				else {
+					$new_meta = trim($new_meta);
+					$new_meta .= '...';
+					break;
+				}
+			}
+
+			if($new_meta) return $new_meta;
+			else return $meta;	    	
+	    }
 		function title_check($title) {
 			global $post;
+			$settings = get_option('seoe_settings');
 
-			if(get_option('seoe_title')) {
-				$ex = get_option('seoe_title_trunc_ex');
-				$length = get_option('seoe_title_length');
-				$type = get_option('seoe_title_trunc_type');
+			if($settings) $settings = unserialize($settings);
+
+			if($settings['seoe_title']) {
+				$ex = $settings['seoe_title_trunc_ex'];
+				$length = $settings['seoe_title_length'];
+				$type = $settings['seoe_title_trunc_type'];
 
 				if(!$length) $length = SEOE_TITLE_LENGTH;
-
-				if($type == 2) {
-					$length -= 3;
-
-					if($length < 0) $length = SEOE_TITLE_LENGTH; # If it would be 0 characters or less then give it the default length
-				} 	
+	
 				if($ex) {
 					$ex = array_map('trim', explode(',', $ex));					
 
@@ -240,28 +294,9 @@ if(!class_exists("seo_enforcer")) {
 				else {
 					$proceed = 1; # No exceptions
 				}
-				if($proceed && strlen($title) > $length) {
-					$raw_title = explode(' ', $title);
 
-					foreach($raw_title as $key=>$value) {
-						$test_title = $test_title . $value . ' ';
-
-						if(strlen($test_title) <= $length) {
-							$new_title .= $value . ' ';
-						}
-						else {
-							$new_title = rtrim($new_title,' ');
-							if($type == 2) $new_title .= '...';
-							break;
-						}
-					}
-
-					if($new_title) return $new_title;
-					else return $title;
-				}
-				else {
-					return $title;
-				}
+				if($proceed && strlen($title) > $length) return $this->run_meta($title, $length, $type);
+				else return $title;
 			}
 			else {
 				return $title;
@@ -273,19 +308,16 @@ if(!class_exists("seo_enforcer")) {
 	     */
 		function desc_check($desc) {
 			global $post;			
+			$settings = get_option('seoe_settings');
 
-			if(get_option('seoe_desc')) {
-				$ex = get_option('seoe_desc_trunc_ex');
-				$length = get_option('seoe_desc_length');
-				$type = get_option('seoe_title_trunc_type');
+			if($settings) $settings = unserialize($settings);
+
+			if($settings['seoe_desc']) {
+				$ex = $settings['seoe_desc_trunc_ex'];
+				$length = $settings['seoe_desc_length'];
+				$type = $settings['seoe_title_trunc_type'];
 
 				if(!$length) $length = SEOE_DESC_LENGTH;
-
-				if($type == 2) {
-					$length -= 3;
-
-					if($length < 0) $length = SEOE_DESC_LENGTH; # If it would be 0 characters or less then give it the default length
-				} 
 
 				if($ex) {
 					$ex = array_map('trim', explode(',', $ex));					
@@ -302,28 +334,9 @@ if(!class_exists("seo_enforcer")) {
 				else {
 					$proceed = 1;
 				}
-				if($proceed && strlen($desc) > $length) {
-					$raw_desc = explode(' ', $desc);
 
-					foreach($raw_desc as $key=>$value) {
-						$test_desc = $test_desc . $value . ' ';
-
-						if(strlen($test_desc) <= $length) {
-							$new_desc .= $value . ' ';
-						}
-						else {
-							$new_desc = rtrim($new_desc,' ');
-							if($type == 2) $new_desc .= '...';
-							break;
-						}
-					}
-
-					if($new_desc) return $new_desc;
-					else return $desc;
-				}
-				else {
-					return $desc;
-				}
+				if($proceed && strlen($desc) > $length) return $this->run_meta($desc, $length, $type);
+				else return $desc;
 			}
 			else {
 				return $desc;
@@ -337,26 +350,69 @@ if(!class_exists("seo_enforcer")) {
 		function content_check($content) {
 			global $post;
 
-			if($ex = get_option('seoe_h1_ex')) {
-				$ex = array_map('trim', explode(',', $ex));
+			$settings = get_option('seoe_settings');
 
-				if(is_home()) {
-					if(!in_array('blog', $ex)) $proceed = 1;
-					else $procedd = 0;
+			if($settings) {
+				$settings = unserialize($settings);
+
+				if($ex = $settings['seoe_h1_ex']) {
+					$ex = array_map('trim', explode(',', $ex));
+
+					if(is_home()) {
+						if(!in_array('blog', $ex)) $proceed = 1;
+						else $procedd = 0;
+					}
+					else {
+						if(!in_array($post->ID, $ex)) $proceed = 1;
+						else $proceed = 0;
+					}
 				}
 				else {
-					if(!in_array($post->ID, $ex)) $proceed = 1;
-					else $proceed = 0;
+					$proceed = 1;
+				}
+				if($proceed) {
+					$content = $this->content_clean($content);				
+				}
+				if($settings['seoe_img']) {
+					$doc = new DOMDocument('1.0','UTF-8');
+					@$doc->loadHTML(utf8_decode($content));
+
+					foreach($doc->getElementsByTagName('img') as $img) {
+						if($img->getAttribute('alt') && !$img->getAttribute('title')) {
+							$title = $doc->createAttribute('title');
+							$title->value = htmlentities($img->getAttribute('alt'));
+							$img->appendChild($title);
+						}
+						elseif(!$img->getAttribute('alt') && $img->getAttribute('title')) {
+							$alt = $doc->createAttribute('alt');
+							$alt->value = htmlentities($img->getAttribute('title'));
+							$img->appendChild($alt);
+						}
+						else { # No alt or title
+							$src = $img->getAttribute('src');
+							$info = pathinfo($src);
+							$img_name = $info['filename'];
+							$use_value = preg_replace('/[^A-Za-z0-9 ]/',' ', $img_name);
+							$use_value = htmlentities($use_value);
+
+							$alt = $doc->createAttribute('alt');
+							$alt->value = $use_value;
+							$img->appendChild($alt);
+
+							$title = $doc->createAttribute('title');
+							$title->value = $use_value;
+							$img->appendChild($title);
+						}
+					}
+
+					$html = preg_replace('/^<!DOCTYPE.+?>/','', $doc->saveHTML());
+					$html = str_replace(array('<html>','</html>','<body>','</body>'), array('','','',''), $html);
+					return $html;
 				}
 			}
 			else {
-				$proceed = 1;
+				return $content;
 			}
-			if($proceed) {
-				$content = $this->content_clean($content);				
-			}
-
-			return $content;
 		}
 		/**
 		 * This will check content to make sure there are no H1 tags and if so it will change
