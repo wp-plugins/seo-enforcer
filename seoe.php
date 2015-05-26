@@ -388,7 +388,7 @@ if(!class_exists("seo_enforcer")) {
 							$alt->value = htmlentities($img->getAttribute('title'));
 							$img->appendChild($alt);
 						}
-						else { # No alt or title
+						elseif(!$img->getAttribute('alt') && !$img->getAttribute('title')) { # No alt or title
 							$src = $img->getAttribute('src');
 							$info = pathinfo($src);
 							$img_name = $info['filename'];
