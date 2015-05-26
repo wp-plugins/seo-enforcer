@@ -7,7 +7,9 @@ if(!class_exists('seoe_admin')) {
 		}		
 		function options() {
 			$image_path = plugins_url('images/', __FILE__);
-			$settings = unserialize(get_option('seoe_settings'));
+			$settings = get_option('seoe_settings');
+
+			if($settings) $settings = unserialize($settings);
 			extract($settings);
 
 			// $seo_title_length = get_option('seoe_title_length');

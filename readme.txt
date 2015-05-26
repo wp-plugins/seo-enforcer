@@ -3,7 +3,7 @@ Contributors: mainehost, godthor
 Tags: SEO, WordPress SEO
 Requires at least: 3.9
 Tested up to: 4.2.2
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -36,6 +36,14 @@ None yet.
 1. Admin area.
 
 == Changelog ==
+
+= 1.3.1 =
+
+Released: May 26th, 2015
+
+* **Bug Fixes**
+
+	* Fixed a potential bug with new installs of SEO Enforcer throwing an unserialization error.
 
 = 1.3.0 =
 

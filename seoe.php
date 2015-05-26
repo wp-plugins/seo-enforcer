@@ -6,7 +6,7 @@
 	Description: Enforces SEO restrictions. Requires WordPress SEO by Yoast.
 	Author: Maine Hosting Solutions
 	Author URI: http://mainehost.com/
-	Version: 1.3.0
+	Version: 1.3.1
 */
 
 if(!class_exists("seo_enforcer")) {
@@ -112,7 +112,10 @@ if(!class_exists("seo_enforcer")) {
 		 * Determines if this is a post screen to enable the SEO checks.
 		 */
 		function check_screen() {
-			$settings = unserialize(get_option('seoe_settings'));
+			$settings = get_option('seoe_settings');
+
+			if($settings) $settings = unserialize($settings);
+
 			$notice_types = array('post','edit-tags','toplevel_page_shopp-products','catalog_page_shopp-categories');
 			$screen = get_current_screen();
 
@@ -186,8 +189,9 @@ if(!class_exists("seo_enforcer")) {
 	            add_action('admin_notices', array($this,'deactivate_notice'));
 	        }
 	        else {
-	        	$settings = unserialize(get_option('seoe_settings'));
+	        	$settings = get_option('seoe_settings');
 
+	        	if($settings) $settings = unserialize($settings);
 				if($settings['seoe_title']) add_filter('wpseo_title', array($this,'title_check'), 99);
 				if($settings['seoe_desc']) add_filter('wpseo_metadesc', array($this,'desc_check'), 99);
 				if($settings['seoe_h1'] || $settings['seoe_img']) add_filter('the_content', array($this,'content_check'), 9999);
@@ -264,7 +268,9 @@ if(!class_exists("seo_enforcer")) {
 	    }
 		function title_check($title) {
 			global $post;
-			$settings = unserialize(get_option('seoe_settings'));
+			$settings = get_option('seoe_settings');
+
+			if($settings) $settings = unserialize($settings);
 
 			if($settings['seoe_title']) {
 				$ex = $settings['seoe_title_trunc_ex'];
@@ -302,7 +308,9 @@ if(!class_exists("seo_enforcer")) {
 	     */
 		function desc_check($desc) {
 			global $post;			
-			$settings = unserialize(get_option('seoe_settings'));
+			$settings = get_option('seoe_settings');
+
+			if($settings) $settings = unserialize($settings);
 
 			if($settings['seoe_desc']) {
 				$ex = $settings['seoe_desc_trunc_ex'];
@@ -342,61 +350,65 @@ if(!class_exists("seo_enforcer")) {
 		function content_check($content) {
 			global $post;
 
-			$settings = unserialize(get_option('seoe_settings'));
+			$settings = get_option('seoe_settings');
 
-			if($ex = $settings['seoe_h1_ex']) {
-				$ex = array_map('trim', explode(',', $ex));
+			if($settings) {
+				$settings = unserialize($settings);
 
-				if(is_home()) {
-					if(!in_array('blog', $ex)) $proceed = 1;
-					else $procedd = 0;
+				if($ex = $settings['seoe_h1_ex']) {
+					$ex = array_map('trim', explode(',', $ex));
+
+					if(is_home()) {
+						if(!in_array('blog', $ex)) $proceed = 1;
+						else $procedd = 0;
+					}
+					else {
+						if(!in_array($post->ID, $ex)) $proceed = 1;
+						else $proceed = 0;
+					}
 				}
 				else {
-					if(!in_array($post->ID, $ex)) $proceed = 1;
-					else $proceed = 0;
+					$proceed = 1;
 				}
-			}
-			else {
-				$proceed = 1;
-			}
-			if($proceed) {
-				$content = $this->content_clean($content);				
-			}
-			if($settings['seoe_img']) {
-				$doc = new DOMDocument('1.0','UTF-8');
-				@$doc->loadHTML(utf8_decode($content));
-
-				foreach($doc->getElementsByTagName('img') as $img) {
-					if($img->getAttribute('alt') && !$img->getAttribute('title')) {
-						$title = $doc->createAttribute('title');
-						$title->value = htmlentities($img->getAttribute('alt'));
-						$img->appendChild($title);
-					}
-					elseif(!$img->getAttribute('alt') && $img->getAttribute('title')) {
-						$alt = $doc->createAttribute('alt');
-						$alt->value = htmlentities($img->getAttribute('title'));
-						$img->appendChild($alt);
-					}
-					else { # No alt or title
-						$src = $img->getAttribute('src');
-						$info = pathinfo($src);
-						$img_name = $info['filename'];
-						$use_value = preg_replace('/[^A-Za-z0-9 ]/',' ', $img_name);
-						$use_value = htmlentities($use_value);
-
-						$alt = $doc->createAttribute('alt');
-						$alt->value = $use_value;
-						$img->appendChild($alt);
-
-						$title = $doc->createAttribute('title');
-						$title->value = $use_value;
-						$img->appendChild($title);
-					}
+				if($proceed) {
+					$content = $this->content_clean($content);				
 				}
+				if($settings['seoe_img']) {
+					$doc = new DOMDocument('1.0','UTF-8');
+					@$doc->loadHTML(utf8_decode($content));
 
-				$html = preg_replace('/^<!DOCTYPE.+?>/','', $doc->saveHTML());
-				$html = str_replace(array('<html>','</html>','<body>','</body>'), array('','','',''), $html);
-				return $html;
+					foreach($doc->getElementsByTagName('img') as $img) {
+						if($img->getAttribute('alt') && !$img->getAttribute('title')) {
+							$title = $doc->createAttribute('title');
+							$title->value = htmlentities($img->getAttribute('alt'));
+							$img->appendChild($title);
+						}
+						elseif(!$img->getAttribute('alt') && $img->getAttribute('title')) {
+							$alt = $doc->createAttribute('alt');
+							$alt->value = htmlentities($img->getAttribute('title'));
+							$img->appendChild($alt);
+						}
+						else { # No alt or title
+							$src = $img->getAttribute('src');
+							$info = pathinfo($src);
+							$img_name = $info['filename'];
+							$use_value = preg_replace('/[^A-Za-z0-9 ]/',' ', $img_name);
+							$use_value = htmlentities($use_value);
+
+							$alt = $doc->createAttribute('alt');
+							$alt->value = $use_value;
+							$img->appendChild($alt);
+
+							$title = $doc->createAttribute('title');
+							$title->value = $use_value;
+							$img->appendChild($title);
+						}
+					}
+
+					$html = preg_replace('/^<!DOCTYPE.+?>/','', $doc->saveHTML());
+					$html = str_replace(array('<html>','</html>','<body>','</body>'), array('','','',''), $html);
+					return $html;
+				}
 			}
 			else {
 				return $content;
