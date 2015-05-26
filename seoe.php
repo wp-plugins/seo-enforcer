@@ -407,12 +407,11 @@ if(!class_exists("seo_enforcer")) {
 
 					$html = preg_replace('/^<!DOCTYPE.+?>/','', $doc->saveHTML());
 					$html = str_replace(array('<html>','</html>','<body>','</body>'), array('','','',''), $html);
-					return $html;
+					$content = $html;
 				}
 			}
-			else {
-				return $content;
-			}
+
+			return $content;
 		}
 		/**
 		 * This will check content to make sure there are no H1 tags and if so it will change
