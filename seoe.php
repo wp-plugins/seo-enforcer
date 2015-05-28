@@ -6,7 +6,7 @@
 	Description: Enforces SEO restrictions. Requires WordPress SEO by Yoast.
 	Author: Maine Hosting Solutions
 	Author URI: http://mainehost.com/
-	Version: 1.3.1
+	Version: 1.3.2
 */
 
 if(!class_exists("seo_enforcer")) {
@@ -85,15 +85,15 @@ if(!class_exists("seo_enforcer")) {
 
 					update_option('seoe_settings', serialize($settings));
 
-					// delete_option('seoe_post_notices');
-					// delete_option('seoe_title');					
-					// delete_option('seoe_title_length');					
-					// delete_option('seoe_title_trunc_type');					
-					// delete_option('seoe_title_trunc_ex');					
-					// delete_option('seoe_desc_trunc_type');					
-					// delete_option('seoe_desc_trunc_ex');					
-					// delete_option('seoe_h1');	
-					// delete_option('seoe_h1_ex');
+					delete_option('seoe_post_notices');
+					delete_option('seoe_title');					
+					delete_option('seoe_title_length');					
+					delete_option('seoe_title_trunc_type');					
+					delete_option('seoe_title_trunc_ex');					
+					delete_option('seoe_desc_trunc_type');					
+					delete_option('seoe_desc_trunc_ex');					
+					delete_option('seoe_h1');	
+					delete_option('seoe_h1_ex');
 				}
 
 				update_option('seoe_settings_version', SEOE_SETTINGS_VER);
@@ -355,23 +355,25 @@ if(!class_exists("seo_enforcer")) {
 			if($settings) {
 				$settings = unserialize($settings);
 
-				if($ex = $settings['seoe_h1_ex']) {
-					$ex = array_map('trim', explode(',', $ex));
+				if($settings['seoe_h1']) {
+					if($ex = $settings['seoe_h1_ex']) {
+						$ex = array_map('trim', explode(',', $ex));
 
-					if(is_home()) {
-						if(!in_array('blog', $ex)) $proceed = 1;
-						else $procedd = 0;
+						if(is_home()) {
+							if(!in_array('blog', $ex)) $proceed = 1;
+							else $procedd = 0;
+						}
+						else {
+							if(!in_array($post->ID, $ex)) $proceed = 1;
+							else $proceed = 0;
+						}
 					}
 					else {
-						if(!in_array($post->ID, $ex)) $proceed = 1;
-						else $proceed = 0;
+						$proceed = 1;
 					}
-				}
-				else {
-					$proceed = 1;
-				}
-				if($proceed) {
-					$content = $this->content_clean($content);				
+					if($proceed) {
+						$content = $this->content_clean($content);				
+					}
 				}
 				if($settings['seoe_img']) {
 					$doc = new DOMDocument('1.0','UTF-8');
