@@ -3,7 +3,7 @@ Contributors: mainehost, godthor
 Tags: SEO, WordPress SEO
 Requires at least: 3.9
 Tested up to: 4.2.2
-Stable tag: 1.3.2
+Stable tag: 1.3.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -36,6 +36,15 @@ None yet.
 1. Admin area.
 
 == Changelog ==
+
+= 1.3.3 =
+
+Sorry for so many updates lately. Every time I think I've fixed a bug I create another. The life of a programmer.
+
+* **Bug Fixes**
+
+	* Corrected an issue where title length checks weren't working correctly.
+	* Title and descriptions will now only append the ... if it's the selected truncation method.
 
 = 1.3.2 =
 
@@ -169,6 +178,10 @@ Released: February 5th, 2015
 * Initial release of the plugin.
 
 == Upgrade Notice ==
+
+= 1.3.3 =
+
+More bug fixes.
 
 = 1.3.2 =
 
