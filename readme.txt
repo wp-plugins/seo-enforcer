@@ -3,7 +3,7 @@ Contributors: mainehost, godthor
 Tags: SEO, WordPress SEO
 Requires at least: 3.9
 Tested up to: 4.2.2
-Stable tag: 1.3.1
+Stable tag: 1.3.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -36,6 +36,16 @@ None yet.
 1. Admin area.
 
 == Changelog ==
+
+= 1.3.2 =
+
+* **Updates**
+
+	* Old settings removed from the database since they aren't needed any longer.
+
+* **Bug Fixes**
+
+	* Fixed a bug where having the image check on would also do an H1 check even if H1 check was disabled.
 
 = 1.3.1 =
 
@@ -159,6 +169,10 @@ Released: February 5th, 2015
 * Initial release of the plugin.
 
 == Upgrade Notice ==
+
+= 1.3.2 =
+
+Bug fixes.
 
 = 1.3.0 =
 
